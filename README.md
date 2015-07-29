@@ -1,7 +1,3 @@
-MAA_ANDROID_H2SDK
-========================
-
-MAA h2sdk library help you to use http/2.0 with MAA Application Accelerate service.
 
 Overview
 ========
@@ -49,9 +45,11 @@ Get OkHttpClient instance
 OkHttpClient okClient = MaaPlus.getOkHttpClient();
 ```
 
+You can use OkHttpClient to handle http request
+
 Example:
 
-GET A URL
+Get Request
 ```java
 OkHttpClient okClient = MaaPlus.getOkHttpClient();
 
@@ -65,7 +63,7 @@ String run(String url) throws IOException {
 }
 ```
 
-POST TO A SERVER
+Post Request
 ```java
 public static final MediaType JSON
     = MediaType.parse("application/json; charset=utf-8");
