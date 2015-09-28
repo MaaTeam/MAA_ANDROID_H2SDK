@@ -1098,10 +1098,13 @@ public final class HttpEngine {
       certificatePinner = client.getCertificatePinner();
     }
     
+    String cname = getCNAME(uriHost);
+    boolean useWsCame = DnsLookup.isUseWsCname(cname);
+    
     return new Address(uriHost, getEffectivePort(request.url()),
         client.getSocketFactory(), sslSocketFactory, hostnameVerifier, certificatePinner,
         client.getAuthenticator(), client.getProxy(), client.getProtocols(),
-        client.getConnectionSpecs(), client.getProxySelector(), getCNAME(uriHost));
+        client.getConnectionSpecs(), client.getProxySelector(), cname, useWsCame);
   }
   
   private static String getCNAME(String host) {

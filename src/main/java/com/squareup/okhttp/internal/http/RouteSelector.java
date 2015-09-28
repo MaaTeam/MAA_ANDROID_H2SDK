@@ -342,7 +342,7 @@ public final class RouteSelector {
         && proxy.type() == Proxy.Type.DIRECT
         && address.useWSCNAME()
         && client.isHttpToHttpsEnabled()) {
-      System.out.println("http upgrade to https");
+      if (MaaPlus.DEBUG) System.out.println("http upgrade to https");
       httpTohttps = true;
     }
     

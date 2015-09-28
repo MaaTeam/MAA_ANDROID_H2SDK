@@ -17,6 +17,8 @@
 package com.squareup.okhttp.internal;
 
 import android.annotation.SuppressLint;
+
+import com.squareup.okhttp.MaaPlus;
 import com.squareup.okhttp.Protocol;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -144,7 +146,7 @@ public class Platform {
           Class.forName("android.net.Network"); // Arbitrary class added in Android 5.0.
           getAlpnSelectedProtocol = new OptionalMethod<>(byte[].class, "getAlpnSelectedProtocol");
           setAlpnProtocols = new OptionalMethod<>(null, "setAlpnProtocols", byte[].class);
-          System.out.println("use alpn protocol");	
+          if (MaaPlus.DEBUG) System.out.println("use alpn protocol");	
         } catch (ClassNotFoundException ignored) {
         }
         
@@ -155,7 +157,7 @@ public class Platform {
             openSslSocketClass.getMethod("getNpnSelectedProtocol");
             getAlpnSelectedProtocol = new OptionalMethod<Socket>(byte[].class, "getNpnSelectedProtocol");
             setAlpnProtocols = new OptionalMethod<Socket>(null, "setNpnProtocols", byte[].class);
-            System.out.println("use npn protocol"); 
+            if (MaaPlus.DEBUG) System.out.println("use npn protocol"); 
           } catch (NoSuchMethodException ignored) {
           }
         }

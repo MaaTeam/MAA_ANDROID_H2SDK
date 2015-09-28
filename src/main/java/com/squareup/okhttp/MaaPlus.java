@@ -9,18 +9,19 @@ import javax.net.ssl.SSLSocketFactory;
 
 import com.squareup.okhttp.internal.Accesslog;
 import com.squareup.okhttp.internal.AccesslogDispatcher;
+import com.squareup.okhttp.internal.tls.OkHostnameVerifier;
 
 import android.app.Application;
 import android.content.Context;
 
 public class MaaPlus {
-  public static final String VERSION = "1.0.0";
+  public static final String VERSION = "1.1.0";
   public static final int H2_HTTPS_PORT = 443;
   public static final int H2_DIRECT_OVER_TLS_PORT = 6443;
   public static final int H2_DIRECT_OVER_TCP_PORT = 6480;
-  public static final boolean DEBUG = true;
+  public static final boolean DEBUG = false;
   final static SSLSocketFactory sslSocketFactory = getDefaultSSLSocketFactory();
-  final static HostnameVerifier hostnameVerifier = new NOHostnameVerifier();
+  final static HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier();
   final static CertificatePinner certificatePinner = CertificatePinner.DEFAULT;
   private Context context;
   private AccesslogDispatcher dispatcher;
@@ -97,13 +98,17 @@ public class MaaPlus {
     }
   }
   
-  private static class NOHostnameVerifier implements HostnameVerifier {
+  private static class DefaultHostnameVerifier implements HostnameVerifier {
+    private static final String DEFAULT_DOMAIN = "wsngh2.chinanetcenter.com";
 
     @Override
-    public boolean verify(String hostname, SSLSession session) {
-      return true;
+    public boolean verify(String host, SSLSession session) {
+      if (OkHostnameVerifier.INSTANCE.verify(host, session)) {
+        return true;
+      }
+      return OkHostnameVerifier.INSTANCE.verify(DEFAULT_DOMAIN, session);
     }
-    
+
   }
   
   public static class Configuration {

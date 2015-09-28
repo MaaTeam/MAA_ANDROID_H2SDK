@@ -15,8 +15,6 @@
  */
 package com.squareup.okhttp;
 
-import android.text.TextUtils;
-
 import com.squareup.okhttp.internal.Util;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -56,7 +54,7 @@ public final class Address {
       SSLSocketFactory sslSocketFactory, HostnameVerifier hostnameVerifier,
       CertificatePinner certificatePinner, Authenticator authenticator, Proxy proxy,
       List<Protocol> protocols, List<ConnectionSpec> connectionSpecs, ProxySelector proxySelector,
-      String cname) {
+      String cname, boolean useWsCname) {
     if (uriHost == null) throw new NullPointerException("uriHost == null");
     if (uriPort <= 0) throw new IllegalArgumentException("uriPort <= 0: " + uriPort);
     if (authenticator == null) throw new IllegalArgumentException("authenticator == null");
@@ -74,13 +72,7 @@ public final class Address {
     this.connectionSpecs = Util.immutableList(connectionSpecs);
     this.proxySelector = proxySelector;
     this.cname = cname;
-    System.out.println(uriHost + " cname is " + this.cname);
-    if (!TextUtils.isEmpty(this.cname) && this.cname.contains("maa.glb0.lxdns.com")) {
-      this.useWSCNAME = true;
-      System.out.println("useWSCNAME");
-    } else {
-      this.useWSCNAME = false;
-    }
+    this.useWSCNAME = useWsCname;
   }
 
   /** Returns the hostname of the origin server. */

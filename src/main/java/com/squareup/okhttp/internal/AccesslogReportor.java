@@ -41,12 +41,12 @@ public class AccesslogReportor {
   
   public void addAccesslog(Accesslog accesslog) {
     if (isStopped()) {
-      System.out.println("============>report stopped");
+      if (MaaPlus.DEBUG) System.out.println("============>report stopped");
       return;
     }
     accesslogs.add(accesslog);
     if (isReadyToReport()) {
-      System.out.println("============>report accesslog");
+      if (MaaPlus.DEBUG) System.out.println("============>report accesslog");
       report(getReportData());
       currentReportNum += eachReportNum;
       accesslogs.clear();
@@ -101,9 +101,9 @@ public class AccesslogReportor {
           out.close();
           
           if (connection.getResponseCode() == 200) {
-            System.out.println("report success");
+            if (MaaPlus.DEBUG) System.out.println("report success");
           } else {
-            System.out.println("report failure");
+            if (MaaPlus.DEBUG) System.out.println("report failure");
           }
         } finally {
           connection.disconnect();
@@ -118,7 +118,7 @@ public class AccesslogReportor {
     
     private void addFileParams(MultipartTool multipart) throws IOException {
       HashMap<String,String> paramMap = getParams();
-      System.out.println(paramMap.toString());
+      if (MaaPlus.DEBUG) System.out.println(paramMap.toString());
       for (Map.Entry<String, String> entry : paramMap.entrySet()) {
         multipart.addPart(entry.getKey(), entry.getValue());
       }

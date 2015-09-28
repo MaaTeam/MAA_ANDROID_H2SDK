@@ -51,7 +51,7 @@ public class AccesslogDispatcher {
   }
   
   private void performAdd(Accesslog accesslog) {
-    System.out.println(accesslog.toString());
+    if (MaaPlus.DEBUG) System.out.println(accesslog.toString());
     
     if (reportor != null) {
       reportor.addAccesslog(accesslog);

@@ -2,24 +2,27 @@ package com.squareup.okhttp.internal;
 
 import java.util.HashMap;
 
-//import org.xbill.DNS.CNAMERecord;
-//import org.xbill.DNS.Lookup;
-//import org.xbill.DNS.Record;
-//import org.xbill.DNS.TextParseException;
-//import org.xbill.DNS.Type;
+import com.squareup.okhttp.MaaPlus;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 public class DnsLookup {
-  private static int MAX_CACHE_TIME = 600; // seconds
-  private static HashMap<String,Name> cacheMap = new HashMap<String,Name>();
-  
+  private static final int MAX_CACHE_TIME = 600; // seconds
+  private static final HashMap<String, Name> cacheMap = new HashMap<String, Name>();
+  private static final String REFER_HOST = "wsngh2.chinanetcenter.com";
+  private static String cnameSuffix = null;
+
   static {
-    System.loadLibrary("cname");
+    try {
+      System.loadLibrary("cname");
+    } catch (UnsatisfiedLinkError e) {
+      Log.e("OkHttp", "Please copy libcname.so to your libs");
+    }
   }
-  
+
   public static native String getHostCname(String host);
-  
+
   public static String getCNAMEByHost(String host) {
     Name name = cacheMap.get(host);
     if (name != null) {
@@ -29,55 +32,56 @@ public class DnsLookup {
         return name.cname;
       }
     }
-    
-    long startMs = System.currentTimeMillis();
+
+    long startMs;
+    if (MaaPlus.DEBUG) {
+      startMs = System.currentTimeMillis();
+    }
     String cname = getHostCname(host);
-    long endMs = System.currentTimeMillis();
-    System.out.println("lookup cname use: " + (endMs - startMs) + " ms");
-    System.out.println("lookup cname: " + cname);
+    if (MaaPlus.DEBUG) {
+      long endMs = System.currentTimeMillis();
+      System.out.println("lookup cname use: " + (endMs - startMs) + " ms");
+      System.out.println(String.format("lookup %s cname: %s", host, cname));
+    }
 
     if (!TextUtils.isEmpty(cname)) {
       cacheMap.put(host, new Name(cname));
       return cname;
     }
-    
-//      try {
-//        Lookup lookup = new Lookup(host, Type.CNAME);
-//        Record[] records = lookup.run();
-//
-//        if (lookup.getResult() == Lookup.SUCCESSFUL) {
-//          for (int i = 0; i < records.length; ++i) {
-//            if (records[i] instanceof CNAMERecord) {
-//              cname = ((CNAMERecord) records[i]).getAlias().toString();
-//              System.out.println("CNAMERecord : " + cname);
-//              return cname;
-//            }
-//          }
-//        } else {
-//          System.out.println(host + " no use cname");
-//        }
-//      } catch (TextParseException e) {
-//        e.printStackTrace();
-//      } finally {					
-//        long endMs = System.currentTimeMillis();
-//        System.out.println("lookup cname use: " + (endMs - startMs) + " ms");
-//      }
-
-      return null;
-    }
-  
+    return null;
+  }
   
   private static boolean expired(long expired) {
     long current = System.currentTimeMillis() / 1000;
     return current > expired;
   }
-  
+
   private static class Name {
     public String cname;
     public long expired;
+
     public Name(String cname) {
       this.cname = cname;
       this.expired = System.currentTimeMillis() / 1000 + MAX_CACHE_TIME;
     }
+  }
+  
+  public static boolean isUseWsCname(String cname) {
+    if (cnameSuffix == null) {
+      String referCname = getCNAMEByHost(REFER_HOST);
+      cnameSuffix = getCnameMark(referCname);
+    }
+    if (!TextUtils.isEmpty(cname) && !TextUtils.isEmpty(cnameSuffix)) {
+      return cname.endsWith(cnameSuffix);
+    }
+    return false;
+  }
+  
+  private static String getCnameMark(String referCname) {
+    if (!TextUtils.isEmpty(referCname)) {
+      int pos = referCname.indexOf(".");
+      if (pos != -1) return referCname.substring(pos);
+    }
+    return "";
   }
 }
