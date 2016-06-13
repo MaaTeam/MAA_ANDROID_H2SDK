@@ -16,16 +16,11 @@
  */
 package com.squareup.okhttp;
 
-import com.squareup.okhttp.internal.Platform;
-import com.squareup.okhttp.internal.Util;
-import com.squareup.okhttp.internal.http.HttpConnection;
-import com.squareup.okhttp.internal.http.HttpEngine;
-import com.squareup.okhttp.internal.http.HttpTransport;
-import com.squareup.okhttp.internal.http.OkHeaders;
-import com.squareup.okhttp.internal.http.SpdyTransport;
-import com.squareup.okhttp.internal.http.Transport;
-import com.squareup.okhttp.internal.spdy.SpdyConnection;
-import com.squareup.okhttp.internal.tls.OkHostnameVerifier;
+import static com.squareup.okhttp.internal.Util.getDefaultPort;
+import static com.squareup.okhttp.internal.Util.getEffectivePort;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_PROXY_AUTH;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -42,10 +37,16 @@ import javax.net.ssl.SSLSocketFactory;
 
 import okio.Source;
 
-import static com.squareup.okhttp.internal.Util.getDefaultPort;
-import static com.squareup.okhttp.internal.Util.getEffectivePort;
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_PROXY_AUTH;
+import com.squareup.okhttp.internal.Platform;
+import com.squareup.okhttp.internal.Util;
+import com.squareup.okhttp.internal.http.HttpConnection;
+import com.squareup.okhttp.internal.http.HttpEngine;
+import com.squareup.okhttp.internal.http.HttpTransport;
+import com.squareup.okhttp.internal.http.OkHeaders;
+import com.squareup.okhttp.internal.http.SpdyTransport;
+import com.squareup.okhttp.internal.http.Transport;
+import com.squareup.okhttp.internal.spdy.SpdyConnection;
+import com.squareup.okhttp.internal.tls.OkHostnameVerifier;
 
 /**
  * The sockets and streams of an HTTP, HTTPS, or HTTPS+SPDY connection. May be
@@ -165,13 +166,13 @@ public final class Connection {
       upgradeToTls(tunnelRequest, readTimeout, writeTimeout);
     } else {
       if (route.cncConnectSpec.useWsAccelerate) {
-        if (MaaPlus.DEBUG) System.out.println("use http 2.0");
+        if (MaaPlus.DEBUG) MaaPlusLog.d("use http 2.0");
         socket.setSoTimeout(0); // SPDY timeouts are set per-stream.
         spdyConnection = new SpdyConnection.Builder(route.address.getUriHost(), true, socket)
               .protocol(Protocol.HTTP_2).build();
         spdyConnection.sendConnectionPreface();    	
       } else {
-        if (MaaPlus.DEBUG) System.out.println("use http 1.1");
+        if (MaaPlus.DEBUG) MaaPlusLog.d("use http 1.1");
         httpConnection = new HttpConnection(pool, this, socket);
       }
     }
@@ -298,7 +299,7 @@ public final class Connection {
     // Check that the certificate pinner is satisfied by the certificates presented.
     certificatePinner.check(route.address.uriHost, handshake.peerCertificates());
 
-    if (MaaPlus.DEBUG) System.out.println("https use protocol: " + protocol.toString());
+    if (MaaPlus.DEBUG) MaaPlusLog.d("https use protocol: " + protocol.toString());
     
     if (protocol == Protocol.SPDY_3 || protocol == Protocol.HTTP_2) {
       sslSocket.setSoTimeout(0); // SPDY timeouts are set per-stream.
@@ -486,22 +487,22 @@ public final class Connection {
     InetSocketAddress orignal = route.inetSocketAddress;
     
     if (MaaPlus.DEBUG) {
-      System.out.println("use proxy: " + (route.proxy.type() != Proxy.Type.DIRECT));
-      System.out.println(MessageFormat.format("connect to {0}", 
+      MaaPlusLog.d("use proxy: " + (route.proxy.type() != Proxy.Type.DIRECT));
+      MaaPlusLog.d(MessageFormat.format("connect to {0}", 
           orignal.getAddress().getHostAddress()));
     }
     
     if (route.cncConnectSpec.isH2DirectOverTls()) {
-      if (MaaPlus.DEBUG) System.out.println("use 6443 port");
+      if (MaaPlus.DEBUG) MaaPlusLog.d("use 6443 port");
       return new InetSocketAddress(orignal.getAddress(), MaaPlus.H2_DIRECT_OVER_TLS_PORT);      
     }
     
     if (route.cncConnectSpec.isH2DirectOverTcp()) {
-      if (MaaPlus.DEBUG) System.out.println("use 6480 port");
+      if (MaaPlus.DEBUG) MaaPlusLog.d("use 6480 port");
       return new InetSocketAddress(orignal.getAddress(), MaaPlus.H2_DIRECT_OVER_TCP_PORT);      
     }
     
-    if (MaaPlus.DEBUG) System.out.println("use " + orignal.getPort() +" port");
+    if (MaaPlus.DEBUG) MaaPlusLog.d("use " + orignal.getPort() +" port");
     return orignal;
   }
 }

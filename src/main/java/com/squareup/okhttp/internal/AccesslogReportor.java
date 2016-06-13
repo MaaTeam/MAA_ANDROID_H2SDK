@@ -2,6 +2,7 @@ package com.squareup.okhttp.internal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -9,9 +10,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.GZIPOutputStream;
 
+import okio.BufferedSink;
+import okio.Okio;
+
 import com.squareup.okhttp.MaaPlus;
+import com.squareup.okhttp.MaaPlusLog;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.XXTEA;
 
 import android.content.Context;
@@ -27,26 +37,34 @@ public class AccesslogReportor {
   private static final String ENCRYPT_KEY = "0123456789abcdeffedcba9876543210";
 
   private final Context context;
-  private final ArrayList<Accesslog> accesslogs = new ArrayList<Accesslog>();
+  private final ArrayList<String> accesslogs;
   private final int eachReportNum;
   private final int totalReportNum;
   private int currentReportNum;
+  private final ExecutorService executor;
     
   public AccesslogReportor(Context context, int eachReportNum, int totalReportNum) {
     this.context = context;
     this.eachReportNum = eachReportNum;
     this.totalReportNum = totalReportNum;
     this.currentReportNum = 0;
+    
+    this.accesslogs = new ArrayList<String>();
+    this.executor = Executors.newCachedThreadPool();
   }
   
   public void addAccesslog(Accesslog accesslog) {
+    addAccesslog(accesslog.toFormatString());
+  }
+  
+  public void addAccesslog(String accesslog) {
     if (isStopped()) {
-      if (MaaPlus.DEBUG) System.out.println("============>report stopped");
+      if (MaaPlus.DEBUG) MaaPlusLog.d("============>report stopped");
       return;
     }
     accesslogs.add(accesslog);
     if (isReadyToReport()) {
-      if (MaaPlus.DEBUG) System.out.println("============>report accesslog");
+      if (MaaPlus.DEBUG) MaaPlusLog.d("============>report accesslog");
       report(getReportData());
       currentReportNum += eachReportNum;
       accesslogs.clear();
@@ -62,18 +80,17 @@ public class AccesslogReportor {
   }
   
   private String getReportData() {
-    ArrayList<Accesslog> accesslogs = this.accesslogs;
+    ArrayList<String> accesslogs = this.accesslogs;
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < accesslogs.size(); ++i) {
-      sb.append(accesslogs.get(i).toFormatString()).append("\n");
+      sb.append(accesslogs.get(i)).append("\n");
     }
     return sb.toString();
   }
   
   private void report(final String reportData) {
     AccesslogSender sender = new AccesslogSender(reportData);
-    Thread senderThread = new Thread(sender);
-    senderThread.start();
+    this.executor.submit(sender);
   }
    
   private class AccesslogSender implements Runnable {
@@ -84,26 +101,53 @@ public class AccesslogReportor {
       this.sendData = sendData;
     }
     
+    @Override
     public void run() {
       try {
         URL url = new URL(REPORT_URL);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         
         connection.setDoOutput(true);
-        connection.setChunkedStreamingMode(0);
+//        connection.setChunkedStreamingMode(0);
         connection.setConnectTimeout(10000);
         
-        MultipartTool multipart = new MultipartTool();
-        addFileParams(multipart);
         try {
+          MultipartBuilder multipartBuilder = new MultipartBuilder();
+          multipartBuilder.type(MultipartBuilder.FORM);
+          
+          final HashMap<String,String> paramMap = getParams();
+          for (Map.Entry<String, String> entry : paramMap.entrySet()) {
+            multipartBuilder.addFormDataPart(entry.getKey(), entry.getValue());
+          }
+          RequestBody filePartBody = RequestBody.create(
+              MediaType.parse("application/octet-stream"), 
+              gzip(sendData.getBytes()));
+          multipartBuilder.addFormDataPart("filename", "h2accesslog.gzip", filePartBody);
+
+          RequestBody requestBody = multipartBuilder.build();
+          connection.setRequestProperty("Content-Type", requestBody.contentType().toString());
+
           OutputStream out = connection.getOutputStream();
-          multipart.writeTo(out);
+          BufferedSink bufferedRequestBody = Okio.buffer(Okio.sink(out));
+          requestBody.writeTo(bufferedRequestBody);
+          bufferedRequestBody.flush();
           out.close();
           
           if (connection.getResponseCode() == 200) {
-            if (MaaPlus.DEBUG) System.out.println("report success");
+            if (MaaPlus.DEBUG) {
+              MaaPlusLog.d("report success");
+              
+              InputStream is = connection.getInputStream();
+              StringBuilder responseMessage = new StringBuilder();
+              int len;
+              byte[] buffer = new byte[256];
+              while((len = is.read(buffer)) != -1) {
+                responseMessage.append(new String(buffer, 0, len));
+              }
+              MaaPlusLog.d("response msg: " + responseMessage.toString());
+            }
           } else {
-            if (MaaPlus.DEBUG) System.out.println("report failure");
+            if (MaaPlus.DEBUG) MaaPlusLog.d("report failure");
           }
         } finally {
           connection.disconnect();
@@ -116,26 +160,27 @@ public class AccesslogReportor {
       }
     }
     
-    private void addFileParams(MultipartTool multipart) throws IOException {
-      HashMap<String,String> paramMap = getParams();
-      if (MaaPlus.DEBUG) System.out.println(paramMap.toString());
-      for (Map.Entry<String, String> entry : paramMap.entrySet()) {
-        multipart.addPart(entry.getKey(), entry.getValue());
-      }
-      multipart.addPart("filename", "h2accesslog.gzip", gzip(sendData.getBytes()), true);      
-    }
-    
     private HashMap<String,String> getParams() {
+      String imei = "unknown";
+      String imsi = "unknown";
+      
       final TelephonyManager telephonyManager = 
           (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-      String imei = telephonyManager.getDeviceId();
-      if (TextUtils.isEmpty(imei)) {
-        imei = "unknown";
+      
+      try {
+        imei = telephonyManager.getDeviceId();
+        if (TextUtils.isEmpty(imei)) {
+          imei = "unknown";
+        }
+      } catch (Throwable e) {
       }
       
-      String imsi = telephonyManager.getSubscriberId();
-      if (TextUtils.isEmpty(imsi)) {
-        imsi = "Unknown";
+      try {
+        imsi = telephonyManager.getSubscriberId();
+        if (TextUtils.isEmpty(imsi)) {
+          imsi = "unknown";
+        }
+      } catch (Throwable e) {
       }
       
       imei = XXTEA.encrypt(imei, ENCRYPT_KEY);
@@ -150,7 +195,7 @@ public class AccesslogReportor {
       paramMap.put("sdkVersion", MaaPlus.VERSION);
       paramMap.put("timestamp", String.valueOf(System.currentTimeMillis()));
       paramMap.put("platform", "android/" + Build.VERSION.RELEASE);
-      paramMap.put("type", "h2sdk");
+      paramMap.put("type", "maa-h2");
       paramMap.put("codec", "gzip");
       return paramMap;
     }
@@ -164,7 +209,7 @@ public class AccesslogReportor {
         if (packageInfo != null) {
           appVersion = packageInfo.versionName;
         }
-      } catch (PackageManager.NameNotFoundException e) {
+      } catch (Throwable e) {
       }
       return appVersion;
     }
@@ -237,61 +282,4 @@ public class AccesslogReportor {
     }
   }
   
-  private static class MultipartTool {
-    private final String boundary = "---7d4a6d158c9";
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    boolean isSetFirst = false;
-      
-    public void addPart(final String key, final String value) {
-      writeFirstBoundaryIfNeeds();
-      try {
-        out.write(("Content-Disposition: form-data; name=\"" + key + "\"\r\n\r\n")
-            .getBytes());
-        out.write(value.getBytes());
-        out.write(("\r\n--" + boundary + "\r\n").getBytes());
-      } catch (final IOException e) {
-        e.printStackTrace();
-      }
-    }
-    
-    public void addPart(final String key, final String fileName,
-        final byte[] data, final boolean isLast) {
-      addPart(key, fileName, data, "application/octet-stream", isLast);
-    }
-    
-    public void addPart(final String key, final String fileName,
-        final byte[] data, String type, final boolean isLast) {
-      writeFirstBoundaryIfNeeds();
-      try {
-        type = "Content-Type: " + type + "\r\n";
-        out.write(("Content-Disposition: form-data; name=\"" + key
-            + "\"; filename=\"" + fileName + "\"\r\n").getBytes());
-        out.write(type.getBytes());
-        out.write("Content-Transfer-Encoding: binary\r\n\r\n".getBytes());
-
-        out.write(data);
-        if (!isLast)
-          out.write(("\r\n--" + boundary + "\r\n").getBytes());
-        out.flush();
-      } catch (final Exception e) {
-        e.printStackTrace();
-      }
-    }
-    
-    public void writeTo(final OutputStream outstream) throws IOException {
-      outstream.write(out.toByteArray());
-    }
-    
-    public void writeFirstBoundaryIfNeeds() {
-      if (!isSetFirst) {
-        try {
-          out.write(("--" + boundary + "\r\n").getBytes());
-        } catch (final IOException e) {
-          e.printStackTrace();
-        }
-      }
-
-      isSetFirst = true;
-    }
-  }
 }

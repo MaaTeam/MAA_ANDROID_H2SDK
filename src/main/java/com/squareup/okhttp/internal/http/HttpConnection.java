@@ -16,17 +16,17 @@
 
 package com.squareup.okhttp.internal.http;
 
-import com.squareup.okhttp.Connection;
-import com.squareup.okhttp.ConnectionPool;
-import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.internal.Internal;
-import com.squareup.okhttp.internal.Util;
+import static com.squareup.okhttp.internal.Util.checkOffsetAndCount;
+import static com.squareup.okhttp.internal.http.StatusLine.HTTP_CONTINUE;
+import static com.squareup.okhttp.internal.http.Transport.DISCARD_STREAM_TIMEOUT_MILLIS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+
 import okio.Buffer;
 import okio.BufferedSink;
 import okio.BufferedSource;
@@ -35,10 +35,12 @@ import okio.Sink;
 import okio.Source;
 import okio.Timeout;
 
-import static com.squareup.okhttp.internal.Util.checkOffsetAndCount;
-import static com.squareup.okhttp.internal.http.StatusLine.HTTP_CONTINUE;
-import static com.squareup.okhttp.internal.http.Transport.DISCARD_STREAM_TIMEOUT_MILLIS;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import com.squareup.okhttp.Connection;
+import com.squareup.okhttp.ConnectionPool;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.internal.Internal;
+import com.squareup.okhttp.internal.Util;
 
 /**
  * A socket connection that can be used to send HTTP/1.1 messages. This class
@@ -418,12 +420,21 @@ public final class HttpConnection {
     private long bytesRemainingInChunk = NO_CHUNK_YET;
     private boolean hasMoreChunks = true;
     private final HttpEngine httpEngine;
+    private long responseBodySize = 0;
 
     ChunkedSource(HttpEngine httpEngine) throws IOException {
       this.httpEngine = httpEngine;
     }
 
     @Override public long read(Buffer sink, long byteCount) throws IOException {
+      long readCnt = readimpl(sink, byteCount);
+      if (readCnt > 0) {
+        responseBodySize += readCnt;
+      }
+      return readCnt;
+    }
+
+    private long readimpl(Buffer sink, long byteCount) throws IOException {
       if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
       if (closed) throw new IllegalStateException("closed");
       if (!hasMoreChunks) return -1;
@@ -472,6 +483,7 @@ public final class HttpConnection {
         unexpectedEndOfInput();
       }
       closed = true;
+      httpEngine.connectionClosed(responseBodySize);
     }
   }
 

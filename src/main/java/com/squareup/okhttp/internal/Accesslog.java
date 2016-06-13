@@ -1,10 +1,10 @@
 package com.squareup.okhttp.internal;
 
-import java.text.MessageFormat;
-
-import com.squareup.okhttp.Protocol;
+import java.util.Locale;
 
 import android.text.format.DateFormat;
+
+import com.squareup.okhttp.Protocol;
 
 public class Accesslog {
   final String destHost;
@@ -21,8 +21,9 @@ public class Accesslog {
   final long wait;
   final long recv;
   final long contentLength;
+  final long originLength;
   final String cname;
-  
+
   public Accesslog(Builder builder) {
     this.destHost = builder.destHost;
     this.responseTimestamp = builder.responseTimestamp;
@@ -38,15 +39,17 @@ public class Accesslog {
     this.wait = builder.wait;
     this.recv = builder.recv;
     this.contentLength = builder.contentLength;
+    this.originLength = builder.originLength;
     this.cname = builder.cname;
   }
-  
+
   public String getDestHost() {
     return destHost;
   }
 
   public String getResponseTime() {
-    return DateFormat.format("yyyy-MM-dd kk:mm:ss", responseTimestamp).toString(); 
+    return DateFormat.format("yyyy-MM-dd kk:mm:ss", responseTimestamp)
+        .toString();
   }
 
   public String getUrl() {
@@ -104,40 +107,23 @@ public class Accesslog {
   public Builder newBuilder() {
     return new Builder(this);
   }
-  
+
   public String toFormatString() {
-    return MessageFormat.format(
-        "{0,number,#}\t{1}\t{2}\t{3}\t{4}\t{5,number,#}" +
-        "\t{6}\t{7,number,#}\t{8,number,#}\t{9,number,#}\t{10,number,#}\t{11,number,#}\t{12}\t{13,number,#}\t{14}", 
-        responseTimestamp, relViaProxy, method, url, contentType, status, 
-        protocol, dns, conn, send, wait, recv, destHost, contentLength, cname
-       );
+    return String.format(Locale.US,
+        "%d\t%s\t%s\t%s\t%s\t%d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%d",
+        responseTimestamp, relViaProxy, method, url, contentType, status,
+        protocol, dns, conn, send, wait, recv, destHost, contentLength, cname,
+        originLength);
   }
-  
+
+  @Override
   public String toString() {
-    return MessageFormat.format(
-        "responseTimestamp={0,number,#}" +
-        ", relViaProxy={1}" +
-        ", url={2}" +
-        ", status={3}" +
-        ", protocol={4}" +
-        ", method={5}" +
-        ", contentType={6}" +
-        ", dns={7,number,#}" +
-        ", conn={8,number,#}" +
-        ", send={9,number,#}" +
-        ", wait={10,number,#}" +
-        ", recv={11,number,#}" +
-        ", contentLength={12,number,#}" +
-        ", destHost={13}" +
-        ", cname={14}", 
-        responseTimestamp, 
-        relViaProxy, url, status, protocol, method, 
-        contentType, dns, conn, send, wait, recv,
-        contentLength, destHost, cname);
+    return String.format(Locale.US,
+        "%d,%s,%s,%s,%s,%d,%s,%d,%d,%d,%d,%d,%s,%d,%s,%d", responseTimestamp,
+        relViaProxy, method, url, contentType, status, protocol, dns, conn,
+        send, wait, recv, destHost, contentLength, cname, originLength);
   }
-  
-  
+
   public static class Builder {
     private String destHost;
     private long responseTimestamp;
@@ -153,12 +139,13 @@ public class Accesslog {
     private long wait = 0;
     private long recv = 0;
     private long contentLength = -1;
+    private long originLength = -1;
     private String cname;
-    
+
     public Builder() {
-      
+
     }
-    
+
     public Builder(Accesslog that) {
       this.destHost = that.destHost;
       this.responseTimestamp = that.responseTimestamp;
@@ -174,29 +161,30 @@ public class Accesslog {
       this.wait = that.wait;
       this.recv = that.recv;
       this.contentLength = that.contentLength;
+      this.originLength = that.originLength;
       this.cname = that.cname;
     }
-    
+
     public Builder setDestHost(String destHost) {
       this.destHost = destHost;
       return this;
     }
-    
+
     public Builder setResponseTime(long responseTimeMillis) {
       this.responseTimestamp = responseTimeMillis;
       return this;
     }
-    
+
     public Builder setUrl(String url) {
       this.url = url;
       return this;
     }
-    
+
     public Builder setStatus(int status) {
       this.status = status;
       return this;
     }
-    
+
     public Builder setRelViaProxy(String relViaProxy) {
       this.relViaProxy = relViaProxy;
       return this;
@@ -215,53 +203,60 @@ public class Accesslog {
       this.method = method;
       return this;
     }
-    
+
     public Builder setContentType(String contentType) {
       this.contentType = contentType;
       return this;
     }
-    
+
     public Builder setDns(long dns) {
       this.dns = dns;
       return this;
     }
-    
+
     public Builder setConn(long conn) {
       this.conn = conn;
       return this;
     }
-    
+
     public Builder setSend(long send) {
       this.send = send;
       return this;
     }
-    
+
     public Builder setWait(long wait) {
       this.wait = wait;
       return this;
     }
-    
+
     public Builder setRecv(long recv) {
       this.recv = recv;
       return this;
     }
-    
+
     public Builder setContentLength(long contentLength) {
       this.contentLength = contentLength;
+      if (this.originLength == -1 && contentLength > 0)
+        this.originLength = contentLength;
       return this;
     }
-    
+
+    public Builder setOriginalLength(long originLength) {
+      this.originLength = originLength;
+      return this;
+    }
+
     public Builder setCname(String cname) {
       this.cname = cname;
       return this;
     }
-    
+
     public Accesslog build() {
       return new Accesslog(this);
     }
-    
-    public static String getRelViaProxy(boolean useWsCname, 
-        boolean ishttps, boolean isproxy, boolean httpTohttps) {
+
+    public static String getRelViaProxy(boolean useWsCname, boolean ishttps,
+        boolean isproxy, boolean httpTohttps) {
       if (ishttps || httpTohttps) {
         return useWsCname ? (isproxy ? "DPS" : "PS") : "DS";
       } else {

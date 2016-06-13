@@ -2,10 +2,10 @@ package com.squareup.okhttp.internal;
 
 import java.util.HashMap;
 
-import com.squareup.okhttp.MaaPlus;
-
 import android.text.TextUtils;
-import android.util.Log;
+
+import com.squareup.okhttp.MaaPlus;
+import com.squareup.okhttp.MaaPlusLog;
 
 public class DnsLookup {
   private static final int MAX_CACHE_TIME = 600; // seconds
@@ -17,7 +17,7 @@ public class DnsLookup {
     try {
       System.loadLibrary("cname");
     } catch (UnsatisfiedLinkError e) {
-      Log.e("OkHttp", "Please copy libcname.so to your libs");
+      MaaPlusLog.e("Please copy libcname.so to your libs");
     }
   }
 
@@ -40,8 +40,8 @@ public class DnsLookup {
     String cname = getHostCname(host);
     if (MaaPlus.DEBUG) {
       long endMs = System.currentTimeMillis();
-      System.out.println("lookup cname use: " + (endMs - startMs) + " ms");
-      System.out.println(String.format("lookup %s cname: %s", host, cname));
+      MaaPlusLog.d("lookup cname use: " + (endMs - startMs) + " ms");
+      MaaPlusLog.d(String.format("lookup %s cname: %s", host, cname));
     }
 
     if (!TextUtils.isEmpty(cname)) {

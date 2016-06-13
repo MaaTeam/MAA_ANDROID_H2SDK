@@ -1,0 +1,655 @@
+commit fe8998ab5cfeeb32d391aa53533c483fb5d92bae (HEAD, tag: v1.6.0, origin/master, origin/HEAD, master)
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    Update man pages
+
+commit 4988cd26b529c6fd3fb9699eec935c9809202416
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    Bump up version number to 1.6.0, LT revision to 18:0:4
+
+commit 1b15bb7a5634e6f170bf14529b038b2c9c60edc7
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    Update neverbleed
+
+commit 8122bc5aeff0cbed025a78d888b9a3249d354067
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    Fix compile error with gcc ASAN enabled
+
+commit bd9a19e23be9a0114845389ce78c1ec590ff5ba6
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    Add test for 92a56d034f201cbb609606184822cf1716677207
+
+commit 92a56d034f201cbb609606184822cf1716677207
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    Fix bug that idle/closed stream may be destroyed while it is referenced
+
+commit 5de2c7a8c137f5d71c4a23533cd6bcd59920f554
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    Detect availability of initgroups
+
+commit 7c5ef0613dc9f540021ea97f4a53ce2841d0866f
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-21
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    asio: Add configurable connect/read timeout for client
+    
+    This commit includes backward incompatible change, since we change
+    private field in public API class.
+
+commit 1ee1122d40a9ce8adebd62f81d33cc60e153ae89
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-22
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-23
+
+    asio: Add configurable tls handshake/read timeout to server
+
+commit 09bd9c94a3fdb6e74763f942b4bbec0459b6bc2b
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-22
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-22
+
+    asio: client: Should call shutdown_socket() on read error
+
+commit ca4a40b8e07b7cf650bcb504bf8c49df572b4ad4
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-21
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-21
+
+    Don't schedule response HEADERS with priority tree
+    
+    Previously we scheduled the transmission of response HEADERS using
+    priority tree in the belief that it allows more better utilization of
+    bandwidth for prioritized streams.  But to reduce the overhead of
+    reconstruction of priority queue when connection level flow control
+    window is depleted, we just don't check priority tree in this case.
+    This means that response HEADERS frames are not sent even though they
+    are not flow controlled.  This could waste bandwidth.  To improve this
+    situation, we stop scheduling response HEADERS with priority tree for
+    now.  Now they are just sent in the order they submitted.  The
+    response body DATA continued to be scheduled with priority tree as
+    before.
+
+commit cb73ba948d1edb35916500c7023a8d76558465fd
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-20
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-20
+
+    Simplify HEADERS handling; handle push response in one function
+
+commit e957147249b4b843f008201089023e6bbc3c75f0
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-20
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-20
+
+    Make obvious implementation error connection error
+
+commit 010726a87582e3a7c01304f654d1acdbf5f87841
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-20
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-20
+
+    Simplify error handling in nghttp2_session_on_headers_received
+    
+    return session_inflate_handle_invalid_stream(...) case is for streams
+    for INITIAL state, but this is rare case.  In general, we'd like to
+    reduce RST_STREAM transmission, and it is suffice to ignore this frame
+    for now.
+
+commit 6c1a76af6e466361593a194c27c02ad1b999910c
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-20
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-20
+
+    asio: Use std::move for remote_endpoint assignment
+
+commit 19146211d7bebb0ee016535c5a5be18c7ff4c4b4
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-20
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-20
+
+    Update doc
+
+commit 9f0083309e469fa4802ff226af0b24ae02ff2407
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-20
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-20
+
+    Fix strange use of session_detect_idle_stream
+
+commit dd93b293973743852c1075896324e58902ebc173
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-20
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-20
+
+    clang-format
+
+commit c5ea2b4ab5ce8bb9fcfdc586fcc90171c5c4ac7b
+Merge: 5a2d755 e71948d
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-19
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-19
+
+    Merge branch 'apohl79-master'
+
+commit e71948d6117ea0e9e8635ca768a891ba9d8f16dc
+Merge: 5a2d755 9f2d064
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-19
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-19
+
+    Merge branch 'master' of https://github.com/apohl79/nghttp2 into apohl79-master
+
+commit 5a2d75551d01747f524cbb6cb44a498d9e3db61e
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-19
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-19
+
+    h2load: Remove "(client)" from per-client req/s stat for simplicity
+
+commit 9f2d064d7c8d1db3969bfa77ddc44734bd3b34a4
+Author:     Andreas Pohl <pohl@adtech.de>
+AuthorDate: 2015-12-19
+Commit:     Andreas Pohl <pohl@adtech.de>
+CommitDate: 2015-12-19
+
+    libnghttp2_asio: Optimized remote endpoint interface to const ref where possible
+
+commit 2d2188e77ba8321f5252cf6bd763c141aebe889f
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-19
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-19
+
+    src: Add 451 status code
+    
+    https://datatracker.ietf.org/doc/draft-ietf-httpbis-legally-restricted-status/
+
+commit feae76fbc0fc14b6eea2900dd33141ac23a9bf97
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-18
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-18
+
+    Remove unused commented lines
+
+commit 80f7abb565b4e92bab11759d4efefd6119220a6d
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-17
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-17
+
+    Fix crash caused by the regression in 9f8fc7b2bb5614886f4eea6dacb22f95246356a9
+
+commit 9f8fc7b2bb5614886f4eea6dacb22f95246356a9
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-17
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-17
+
+    Strict error handling for frames which are not allowed after closed (remote)
+    
+    This makes h2spec strict mode a bit happier.  We still one failing
+    test with h2spec -S (strict mode).
+
+commit 9cfda0c070b24850aea05b35516d236cb44d5249
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-17
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-17
+
+    Update doc
+
+commit a30dad4f5e2ce6a3ebd8a955fd1790dc53353bc8
+Author:     Andreas Pohl <pohl@adtech.de>
+AuthorDate: 2015-12-16
+Commit:     Andreas Pohl <pohl@adtech.de>
+CommitDate: 2015-12-16
+
+    libnghttp2_asio: Added access to a requests remote endpoint
+
+commit 15d9f222eddfbdafab501e5b23ebe5d8b4be83f2
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-16
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-16
+
+    Add --lib-only configure option
+    
+    This is a short hand for --disable-app --disable-examples
+    --disable-hpack-tools --disable-python-bindings, for users who want to
+    build libnghttp2 only.
+
+commit ef7d6e8a0c5096021237abea55f055679866b3e7
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-16
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-16
+
+    nghttpx: Loose HTTP Upgrade condition
+
+commit 71012fe83a9ab4f8ea8c4247f7b3cce4e1f96684
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-15
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-15
+
+    nghttpx: Add constexpr
+
+commit 228d92244aa66b80e506fd3e4ddc6b2fc45efb5a
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-15
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-15
+
+    Optimize nghttp2_pq swap
+
+commit 248a64f0b2ca89cbe4efaaa5c90adbb1d31766f7
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-11
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-14
+
+    Compile with OpenSSL 1.1.0-pre1
+
+commit 68c5deea5a6cc7edf0e248b73d318ddba7108bc2
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-11
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-11
+
+    Clarify the condition when opening new stream from remote is allowed
+
+commit ab93db2259e64d909e001979553b3cabe2c6b3a4
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-11
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-11
+
+    Add test when client sends push response to server
+
+commit f14ac7431622c34e7cd3355719ad417fab71de5e
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-10
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-10
+
+    At least check stream ID is valid when PUSH_PROMISE is received in goaway mode
+
+commit 0c70ff56589e4b02c61a71d471adf1a45e23dc16
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-10
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-10
+
+    Simplify
+
+commit ba671a847391b7c7897f8a46878caac51daf7cfc
+Merge: 86505b1 66bbb5c
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-10
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-10
+
+    Merge branch 'apohl79-master'
+
+commit 66bbb5c76f20139db9afab51e1e2e9d6e86cb5f8
+Merge: 86505b1 a4392d4
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-10
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-10
+
+    Merge branch 'master' of https://github.com/apohl79/nghttp2 into apohl79-master
+
+commit a4392d4a7f80a29729b3be434e749e2254bd0d8d
+Author:     Andreas Pohl <pohl@adtech.de>
+AuthorDate: 2015-12-09
+Commit:     Andreas Pohl <pohl@adtech.de>
+CommitDate: 2015-12-09
+
+    libnghttp2_asio: Make io_service accessors const
+
+commit 86505b1c548b5aaae4e0230cc243ea027f13d8dd
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-08
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-08
+
+    Update h2load howto and all manual pages
+
+commit 924fef1f32c9c217bdf379852cd748d71fab3b8c
+Author:     Andreas Pohl <pohl@adtech.de>
+AuthorDate: 2015-12-08
+Commit:     Andreas Pohl <pohl@adtech.de>
+CommitDate: 2015-12-08
+
+    libnghttp2_asio: Added io_service accessors
+    
+    To allow the asio wrapper to work with boost.fiber it is required
+    to access the underlying io_service objects.
+
+commit 7cc2d22ab5389cf45a0f43ac7fb09338fcb686fb
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-08
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-08
+
+    Fix compile error with gcc
+
+commit abcdbf003979f56c8880d75542e34670a7dd0800
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-08
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-08
+
+    Take into account remainder due to integer division when calculating cycle
+
+commit 4bcc14fc67e668140ac977154c1960b78378e2f9
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-07
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-07
+
+    Reschedule stream when only weight is changed
+    
+    Previously, we only updated stream's weight field when only weight was
+    changed by PRIORITY frame.  If stream is queued, it would be better to
+    actually reschedule it based on new weight.  This could be especially
+    useful if weight is increased.
+
+commit 72f815d5355de82919818ee5f42c6463715b9e84
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-07
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-07
+
+    Update descendant_last_cycle on nghttp2_stream_next_outbound_item
+    
+    Previously, we updated descendant_last_cycle in
+    nghttp2_stream_reschedule, which is called after non-zero DATA frame.
+    But this was not optimal since we still had old descendant_last_cycle,
+    and new stream was scheduled based on it.  Now descendant_last_cycle
+    is updated in nghttp2_stream_next_outbound_item, which is called when
+    stream with highest priority is selected from queue.  And new stream
+    is scheduled based on it.  This commit also removes 0-reset of
+    descendant_last_cycle and cycle in nghttp2_stream_reschedule.  This
+    could help making them lower, so that they are not overflow.  But
+    there is a pattern that it doesn't work, and we are not sure they are
+    really useful at this moment.
+
+commit 7ca9ead36b43f1d0f5334d709061b7cf92fc154b
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-04
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-04
+
+    nghttp: Update doc for default value of -M
+
+commit e67987404b42db501115df9a05eb7ec8d11c3953
+Merge: a151a44 90b5a58
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-04
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-04
+
+    Merge branch 'sunpoet-master'
+
+commit 90b5a5856b84216e6f6d8ae88ee0db5e012e61bb
+Author:     Sunpoet Po-Chuan Hsieh <sunpoet@vacuum.sunpoet.net>
+AuthorDate: 2015-12-04
+Commit:     Sunpoet Po-Chuan Hsieh <sunpoet@vacuum.sunpoet.net>
+CommitDate: 2015-12-04
+
+    Fix build when OpenSSL 1.0.2 is not available
+
+commit a151a44caf92d8bc7ecca8d8ec4780fa6206be96
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-03
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-03
+
+    Set max number of outgoing concurrent streams to 100 by default
+    
+    Instead of using nonsensical large value for max outgoing concurrent
+    streams, use more sensible value, 100.
+
+commit 478a423bcf2aaa2c9a79d2beb2b2e8c5d282d65d
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-03
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-03
+
+    Reduce nghttp2_stream size
+
+commit 93d8636fb007ee07558313b6bbfd560b982f4504
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-03
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-03
+
+    Keep incoming streams only at server side
+    
+    We should only keep incoming closed streams because we only keep at
+    most max concurrent streams, which only applied to incoming streams.
+
+commit 2288ee8060b8243b96a4ce95be54ed2e91ff57a2
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-02
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-02
+
+    Create stream object for pushed resource during nghttp2_submit_push_promise()
+    
+    Previously, stream object for pushed resource was not created during
+    nghttp2_submit_push_promise().  It was created just before
+    nghttp2_before_frame_send_callback was called for that PUSH_PROMISE
+    frame.  This means that application could not call
+    nghttp2_submit_response for the pushed resource before
+    nghttp2_before_frame_send_callback was called.  This could be solved
+    by callback chaining, but for web server with back pressure from
+    backend stream, it is a bit unnecessarily hard to use.
+    
+    This commit changes nghttp2_submit_push_promise() behaviour so that
+    stream object is created during that call.  It makes application call
+    nghttp2_submit_response right after successful
+    nghttp2_submit_push_promise call.
+
+commit 6beaf4d9f325fa1766a046b0cf2cd69bf1fca3e0
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-01
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-01
+
+    h2load: Add req/s min, max, mean and sd for clients
+
+commit d1d1c83e56a542fdb9e0e4f0f74d26ed292bad71
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-01
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-01
+
+    h2load: Fix broken connection times
+
+commit cbad05e0de1ff001154ed447d271ec171bcba862
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-12-01
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-12-01
+
+    src: Fix compile error with gcc-4.7
+
+commit e01d213636c7da5601d8c5af7e94a3a3d43229ec
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-29
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-29
+
+    Update man pages
+
+commit e1e7840b2cfeaa87e5504329ac9fdb1ee8f9e6a6
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-29
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-29
+
+    doc: Fix broken layout in ascii art
+
+commit 2754d9e2bb23ca04e2a009d657525f2bbab74f95
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-28
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-28
+
+    Update doc
+
+commit 12b2e0a2b35d00f97a1fcf721081ed3a1829fa26
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-28
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-28
+
+    Add nghttp2_session_create_idle_stream() API
+    
+    See GH-436
+
+commit aacac613af5cb0d275394830ac9cce8c457161f3
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-28
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-28
+
+    Assert dep_stream is non-null to shut up scan-build
+
+commit ba9e912cf6548ed0cbb970e9e2afa3a8c6067877
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-28
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-28
+
+    src: Rename isAlpha, isDigit, and isHexDigit as is_...
+
+commit d867fe64e3325b4f7af2b761de1a1ce2372d5cdf
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-28
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-28
+
+    src: Rename endsWith as ends_with
+
+commit de247f7d332fef45b22b49108af20d8ed635c161
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-28
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-28
+
+    src: Rename startsWith as starts_with
+
+commit 1ba28bef1f558330cbde38d30fc333edf977934e
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-28
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-28
+
+    util: Remove unused functions; rename regacy camel-case function names
+
+commit c0858d8c1af4804ef8f3412d82c01af074dada94
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-28
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-28
+
+    src: Minor optimization for appending single character
+
+commit 863493766d9f46300b75fc6f369dc73ccaf6423e
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-27
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-27
+
+    Fix in_attr_char(); cleanup const char array iteration
+
+commit a70445e12230217bd7f93bf12b8da67121b3c38f
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-27
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-27
+
+    Retain stream in reserved state on client side
+    
+    Application may use it using nghttp2_stream_* functions, and traverse
+    its dependency.
+
+commit f23e34fa3cbb575300df6bc7c8854d9d07012477
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-27
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-27
+
+    Handle response in nghttp2_on_begin_frame_callback
+    
+    Previously, nghttp2_session_end_request_headers_received assumes
+    stream is still writable (in other words, local endpoint has not sent
+    END_STREAM).  But this assumption is false, because application can
+    send response in nghttp2_on_begin_frame_callback.  Probably, this
+    assumption was made before the callback was introduced.  This commit
+    addresses this issue.  Since all
+    nghttp2_session_end_*_headers_received functions are identical, we
+    refactored them into one function.
+
+commit 3d1d54e2ced302f2ded012e154436fae3b855f98
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-27
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-27
+
+    Remove dead code
+
+commit c87a062dba95be8b0155a06ae8afc913bb7dbc92
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-11-26
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-11-26
+
+    Bump up version number to v1.5.0-DEV

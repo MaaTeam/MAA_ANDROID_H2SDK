@@ -18,50 +18,6 @@
 package com.squareup.okhttp.internal.http;
 
 
-import com.squareup.okhttp.Address;
-import com.squareup.okhttp.CertificatePinner;
-import com.squareup.okhttp.Connection;
-import com.squareup.okhttp.ConnectionPool;
-import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Protocol;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
-import com.squareup.okhttp.Route;
-import com.squareup.okhttp.internal.Accesslog;
-import com.squareup.okhttp.internal.DnsLookup;
-import com.squareup.okhttp.internal.Internal;
-import com.squareup.okhttp.internal.InternalCache;
-import com.squareup.okhttp.internal.Util;
-import com.squareup.okhttp.internal.Version;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.CookieHandler;
-import java.net.ProtocolException;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.security.cert.CertificateException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSocketFactory;
-
-import okio.Buffer;
-import okio.BufferedSink;
-import okio.BufferedSource;
-import okio.GzipSource;
-import okio.Okio;
-import okio.Sink;
-import okio.Source;
-import okio.Timeout;
-
 import static com.squareup.okhttp.internal.Util.closeQuietly;
 import static com.squareup.okhttp.internal.Util.getDefaultPort;
 import static com.squareup.okhttp.internal.Util.getEffectivePort;
@@ -77,6 +33,54 @@ import static java.net.HttpURLConnection.HTTP_PROXY_AUTH;
 import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.CookieHandler;
+import java.net.ProtocolException;
+import java.net.Proxy;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.security.cert.CertificateException;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSocketFactory;
+
+import okio.Buffer;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.GzipSource;
+import okio.Okio;
+import okio.Sink;
+import okio.Source;
+import okio.Timeout;
+
+import com.squareup.okhttp.Address;
+import com.squareup.okhttp.CertificatePinner;
+import com.squareup.okhttp.Connection;
+import com.squareup.okhttp.ConnectionPool;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.Interceptor;
+import com.squareup.okhttp.MaaPlus;
+import com.squareup.okhttp.MaaPlusLog;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Protocol;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
+import com.squareup.okhttp.Route;
+import com.squareup.okhttp.internal.Accesslog;
+import com.squareup.okhttp.internal.DnsLookup;
+import com.squareup.okhttp.internal.Internal;
+import com.squareup.okhttp.internal.InternalCache;
+import com.squareup.okhttp.internal.Util;
+import com.squareup.okhttp.internal.Version;
 
 /**
  * Handles a single HTTP request/response pair. Each HTTP engine follows this
@@ -125,7 +129,7 @@ public final class HttpEngine {
 
   private Transport transport;
   
-  private Accesslog.Builder accesslogBuilder;
+  private final Accesslog.Builder accesslogBuilder;
 
   /** The time when the request headers were written, or -1 if they haven't been written yet. */
   long sentRequestMillis = -1;
@@ -838,11 +842,14 @@ public final class HttpEngine {
     transport.finishRequest();
     long finishSentRequestMillis = System.currentTimeMillis();
 
-    Response networkResponse = transport.readResponseHeaders()
+    Response.Builder networkResponseBuilder = transport.readResponseHeaders();
+    long receiveMillis = System.currentTimeMillis();
+    
+    Response networkResponse = networkResponseBuilder
         .request(networkRequest)
         .handshake(connection.getHandshake())
         .header(OkHeaders.SENT_MILLIS, Long.toString(sentRequestMillis))
-        .header(OkHeaders.RECEIVED_MILLIS, Long.toString(System.currentTimeMillis()))
+        .header(OkHeaders.RECEIVED_MILLIS, Long.toString(receiveMillis))
         .build();
 
     if (!forWebSocket) {
@@ -853,9 +860,28 @@ public final class HttpEngine {
 
     long finishReceiveMillis = System.currentTimeMillis();
     ResponseBody body = networkResponse.body();
-    MediaType mediaType = body != null ? body.contentType() : null;
+    
+    MediaType mediaType = null;
+    long contentLength = -1;
+    if (body != null) {
+      mediaType = body.contentType();
+      contentLength = body.contentLength();
+    }
+
+    long originLength = -1;
+    String strOriginLength = networkResponse.header("x-original-length");
+    if (strOriginLength != null) {
+      try {
+        originLength = Long.parseLong(strOriginLength);
+      } catch (NumberFormatException ignore) {
+      }
+    }
+    if (originLength == -1) {
+      originLength = contentLength;
+    }
+    
     try {
-      Accesslog accesslog = accesslogBuilder
+      accesslogBuilder
           .setMethod(userRequest.method())
           .setUrl(userRequest.urlString())
           .setDestHost(route.getSocketAddress().getAddress().getHostAddress())
@@ -864,11 +890,11 @@ public final class HttpEngine {
           .setResponseTime(finishReceiveMillis)
           .setProtocol(networkResponse.protocol())
           .setSend(finishSentRequestMillis - sentRequestMillis)
-          .setRecv(finishReceiveMillis - finishSentRequestMillis)
-          .setContentLength(body != null ? body.contentLength() : -1)
+          .setWait(receiveMillis - finishSentRequestMillis)
+          .setRecv(finishReceiveMillis - receiveMillis)
+          .setContentLength(contentLength).setOriginalLength(originLength)
           .setContentType(mediaType != null ? mediaType.toString() : "")
-          .setStatus(networkResponse.code()).build();
-      Internal.instance.addAccesslog(accesslog);
+          .setStatus(networkResponse.code());
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -1107,6 +1133,16 @@ public final class HttpEngine {
         client.getConnectionSpecs(), client.getProxySelector(), cname, useWsCame);
   }
   
+  public void connectionClosed(long responseBodySize) {
+    if (MaaPlus.DEBUG)
+      MaaPlusLog.d("connectionClosed ================>" + responseBodySize);
+
+    if (responseBodySize > 0)
+      accesslogBuilder.setContentLength(responseBodySize);
+
+    Internal.instance.addAccesslog(accesslogBuilder.build());
+  }
+
   private static String getCNAME(String host) {
     return DnsLookup.getCNAMEByHost(host);
   }

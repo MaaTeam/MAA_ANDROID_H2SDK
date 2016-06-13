@@ -15,17 +15,8 @@
  */
 package com.squareup.okhttp.internal.http;
 
-import com.squareup.okhttp.Address;
-import com.squareup.okhttp.CNCConnectionSpec;
-import com.squareup.okhttp.ConnectionSpec;
-import com.squareup.okhttp.MaaPlus;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Route;
-import com.squareup.okhttp.internal.Internal;
-import com.squareup.okhttp.internal.Network;
-import com.squareup.okhttp.internal.Platform;
-import com.squareup.okhttp.internal.RouteDatabase;
+import static com.squareup.okhttp.internal.Util.getEffectivePort;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -38,10 +29,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLProtocolException;
 
-import static com.squareup.okhttp.internal.Util.getEffectivePort;
+import com.squareup.okhttp.Address;
+import com.squareup.okhttp.CNCConnectionSpec;
+import com.squareup.okhttp.ConnectionSpec;
+import com.squareup.okhttp.MaaPlus;
+import com.squareup.okhttp.MaaPlusLog;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Route;
+import com.squareup.okhttp.internal.Internal;
+import com.squareup.okhttp.internal.Network;
+import com.squareup.okhttp.internal.Platform;
+import com.squareup.okhttp.internal.RouteDatabase;
 
 /**
  * Selects routes to connect to an origin server. Each connection requires a
@@ -342,7 +345,8 @@ public final class RouteSelector {
         && proxy.type() == Proxy.Type.DIRECT
         && address.useWSCNAME()
         && client.isHttpToHttpsEnabled()) {
-      if (MaaPlus.DEBUG) System.out.println("http upgrade to https");
+      if (MaaPlus.DEBUG)
+        MaaPlusLog.d("http upgrade to https");
       httpTohttps = true;
     }
     

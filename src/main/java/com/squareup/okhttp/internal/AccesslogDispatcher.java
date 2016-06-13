@@ -1,8 +1,7 @@
 package com.squareup.okhttp.internal;
 
 import java.io.File;
-
-import com.squareup.okhttp.MaaPlus;
+import java.io.IOException;
 
 import android.content.Context;
 import android.os.Handler;
@@ -11,8 +10,11 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 
+import com.squareup.okhttp.MaaPlus;
+import com.squareup.okhttp.MaaPlusLog;
 
 public class AccesslogDispatcher {
+  private static final int MAX_STORE_COUNT = 2000;
   private static final int ACCESSLOG_ADD = 1;
   final DispatchThread dispatchThread;
   final Handler handler;
@@ -31,14 +33,20 @@ public class AccesslogDispatcher {
     } else {
       file = new File(configuration.accesslogPath);
     }
-    AccesslogStore store = new AccesslogStore(file);
+    
+    AccesslogStore store = null;
+    try {
+      store = new AccesslogStore(file, MAX_STORE_COUNT);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     
     AccesslogDispatcher dispatcher = new AccesslogDispatcher(reportor, store);
     return dispatcher;
   }
   
-  public AccesslogDispatcher(AccesslogReportor reportor, AccesslogStore store) {
-    this.reportor = reportor;
+  public AccesslogDispatcher(AccesslogReportor reporter, AccesslogStore store) {
+    this.reportor = reporter;
     this.store = store;
     this.dispatchThread = new DispatchThread();
     this.dispatchThread.start();
@@ -47,17 +55,21 @@ public class AccesslogDispatcher {
   }
 
   public void addAccesslog(Accesslog accesslog) {
-    this.handler.sendMessage(this.handler.obtainMessage(ACCESSLOG_ADD, accesslog));
+    addAccesslog(accesslog.toFormatString(), true);
   }
   
-  private void performAdd(Accesslog accesslog) {
-    if (MaaPlus.DEBUG) System.out.println(accesslog.toString());
+  public void addAccesslog(String accesslog, boolean needStore) {
+    this.handler.obtainMessage(ACCESSLOG_ADD, needStore ? 1 : 0, 0, accesslog).sendToTarget();
+  }
+  
+  private void performAdd(String accesslog, boolean needStore) {
+    if (MaaPlus.DEBUG) MaaPlusLog.d(accesslog);
     
     if (reportor != null) {
       reportor.addAccesslog(accesslog);
     }
     
-    if (store != null) {
+    if (needStore && store != null) {
       store.store(accesslog);
     }
   }
@@ -69,17 +81,19 @@ public class AccesslogDispatcher {
   }
   
   private static class DispatchHandler extends Handler {
-    private AccesslogDispatcher dispatcher;
+    private final AccesslogDispatcher dispatcher;
     public DispatchHandler(Looper looper, AccesslogDispatcher dispatcher) {
       super(looper);
       this.dispatcher = dispatcher;
     }
     
+    @Override
     public void handleMessage(final Message msg) {
       switch(msg.what) {
       case ACCESSLOG_ADD:
-        Accesslog accesslog = (Accesslog) msg.obj;
-        this.dispatcher.performAdd(accesslog);
+        String accesslog = (String) msg.obj;
+        boolean needStore = msg.arg1 == 1;
+        this.dispatcher.performAdd(accesslog, needStore);
         break;
       }
     }

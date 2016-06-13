@@ -16,11 +16,14 @@
 
 package com.squareup.okhttp.internal.spdy;
 
+import static com.squareup.okhttp.internal.spdy.Settings.DEFAULT_INITIAL_WINDOW_SIZE;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import okio.AsyncTimeout;
 import okio.Buffer;
 import okio.BufferedSource;
@@ -28,7 +31,7 @@ import okio.Sink;
 import okio.Source;
 import okio.Timeout;
 
-import static com.squareup.okhttp.internal.spdy.Settings.DEFAULT_INITIAL_WINDOW_SIZE;
+import com.squareup.okhttp.internal.http.HttpEngine;
 
 /** A logical bidirectional stream. */
 public final class SpdyStream {
@@ -71,6 +74,8 @@ public final class SpdyStream {
    * near-simultaneously) then this is the first reason known to this peer.
    */
   private ErrorCode errorCode = null;
+
+  private HttpEngine httpEngine;
 
   SpdyStream(int id, SpdyConnection connection, boolean outFinished, boolean inFinished,
       List<Header> requestHeaders) {
@@ -329,12 +334,22 @@ public final class SpdyStream {
      */
     private boolean finished;
 
+    private long responseBodySize = 0;
+
     private SpdyDataSource(long maxByteCount) {
       this.maxByteCount = maxByteCount;
     }
 
     @Override public long read(Buffer sink, long byteCount)
         throws IOException {
+      long readCnt = readimpl(sink, byteCount);
+      if (readCnt > 0) {
+        responseBodySize += readCnt;
+      }
+      return readCnt;
+    }
+
+    public long readimpl(Buffer sink, long byteCount) throws IOException {
       if (byteCount < 0) throw new IllegalArgumentException("byteCount < 0: " + byteCount);
 
       long read;
@@ -431,6 +446,7 @@ public final class SpdyStream {
         SpdyStream.this.notifyAll();
       }
       cancelStreamIfNecessary();
+      httpEngine.connectionClosed(responseBodySize);
     }
 
     private void checkNotClosed() throws IOException {
@@ -598,5 +614,9 @@ public final class SpdyStream {
     public void exitAndThrowIfTimedOut() throws InterruptedIOException {
       if (exit()) throw new InterruptedIOException("timeout");
     }
+  }
+
+  public void attachHttpEngine(HttpEngine httpEngine) {
+    this.httpEngine = httpEngine;
   }
 }

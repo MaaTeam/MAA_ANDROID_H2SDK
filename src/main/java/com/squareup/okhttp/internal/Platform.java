@@ -19,6 +19,7 @@ package com.squareup.okhttp.internal;
 import android.annotation.SuppressLint;
 
 import com.squareup.okhttp.MaaPlus;
+import com.squareup.okhttp.MaaPlusLog;
 import com.squareup.okhttp.Protocol;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -70,7 +71,7 @@ public class Platform {
   }
 
   public void logW(String warning) {
-    System.out.println(warning);
+    MaaPlusLog.w(warning);
   }
 
   public void tagSocket(Socket socket) throws SocketException {
@@ -146,7 +147,7 @@ public class Platform {
           Class.forName("android.net.Network"); // Arbitrary class added in Android 5.0.
           getAlpnSelectedProtocol = new OptionalMethod<>(byte[].class, "getAlpnSelectedProtocol");
           setAlpnProtocols = new OptionalMethod<>(null, "setAlpnProtocols", byte[].class);
-          if (MaaPlus.DEBUG) System.out.println("use alpn protocol");	
+          if (MaaPlus.DEBUG) MaaPlusLog.d("use alpn protocol");	
         } catch (ClassNotFoundException ignored) {
         }
         
@@ -157,7 +158,7 @@ public class Platform {
             openSslSocketClass.getMethod("getNpnSelectedProtocol");
             getAlpnSelectedProtocol = new OptionalMethod<Socket>(byte[].class, "getNpnSelectedProtocol");
             setAlpnProtocols = new OptionalMethod<Socket>(null, "setNpnProtocols", byte[].class);
-            if (MaaPlus.DEBUG) System.out.println("use npn protocol"); 
+            if (MaaPlus.DEBUG) MaaPlusLog.d("use npn protocol"); 
           } catch (NoSuchMethodException ignored) {
           }
         }
@@ -369,7 +370,7 @@ public class Platform {
         return protocols; // Client advertises these protocols.
       } else if ((methodName.equals("selectProtocol") || methodName.equals("select"))
           && String.class == returnType && args.length == 1 && args[0] instanceof List) {
-        List<String> peerProtocols = (List) args[0];
+        List<String> peerProtocols = (List<String>) args[0];
         // Pick the first known protocol the peer advertises.
         for (int i = 0, size = peerProtocols.size(); i < size; i++) {
           if (protocols.contains(peerProtocols.get(i))) {

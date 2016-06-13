@@ -1,0 +1,156 @@
+event.lo: event.c \
+ /home/lianhs/android/android-ndk-r10e/toolchain/lib/gcc/arm-linux-androideabi/4.9/include/stddef.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/stdlib.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/cdefs.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/cdefs_elf.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/android/api-level.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/string.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/malloc.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/alloca.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/strings.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/types.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/lib/gcc/arm-linux-androideabi/4.9/include/stdint.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/stdint.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/_types.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/_types.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/_wchar_limits.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/posix_types.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/stddef.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/compiler.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/posix_types.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/types.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/types.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/kernel.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/sysmacros.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/memory.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/assert.h \
+ event.h ev.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/signal.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/lib/gcc/arm-linux-androideabi/4.9/include-fixed/limits.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/lib/gcc/arm-linux-androideabi/4.9/include-fixed/syslimits.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/limits.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/limits.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/limits.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/internal_types.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/limits.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/syslimits.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/page.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/signal.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm-generic/signal.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/sigcontext.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/siginfo.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm-generic/siginfo.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/ucontext.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/user.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/stat.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/time.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/time.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/stat.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/endian.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/endian.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/endian.h \
+ /home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/time.h
+
+/home/lianhs/android/android-ndk-r10e/toolchain/lib/gcc/arm-linux-androideabi/4.9/include/stddef.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/stdlib.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/cdefs.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/cdefs_elf.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/android/api-level.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/string.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/malloc.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/alloca.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/strings.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/types.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/lib/gcc/arm-linux-androideabi/4.9/include/stdint.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/stdint.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/_types.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/_types.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/_wchar_limits.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/posix_types.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/stddef.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/compiler.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/posix_types.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/types.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/types.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/kernel.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/sysmacros.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/memory.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/assert.h:
+
+event.h:
+
+ev.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/signal.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/lib/gcc/arm-linux-androideabi/4.9/include-fixed/limits.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/lib/gcc/arm-linux-androideabi/4.9/include-fixed/syslimits.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/limits.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/limits.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/limits.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/internal_types.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/limits.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/syslimits.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/page.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/signal.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm-generic/signal.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/sigcontext.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm/siginfo.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/asm-generic/siginfo.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/ucontext.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/user.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/stat.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/time.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/time.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/linux/stat.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/endian.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/sys/endian.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/machine/endian.h:
+
+/home/lianhs/android/android-ndk-r10e/toolchain/sysroot/usr/include/time.h:

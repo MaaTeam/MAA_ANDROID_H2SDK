@@ -4,26 +4,22 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-
 public class AccesslogStore {
-  
-  private static final int MAX_COUNT = 2000;
+  private final int maxCount;
+  private final FileWriter writer;
   private int count;
-  private FileWriter writer;
   
-  public AccesslogStore(File storeFile) {
-    try {
-      this.writer = new FileWriter(storeFile);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  public AccesslogStore(File storeFile, int maxCount) throws IOException {
+    this.writer = new FileWriter(storeFile);
+    this.maxCount = maxCount;
     this.count = 0;
   }
 
-  public void store(Accesslog accesslog) {
-    if (writer == null) return;
+  public void store(String accesslog) {
+    if (count >= maxCount) return;
+    
     try {
-      writer.write(accesslog.toFormatString());
+      writer.write(accesslog);
       writer.write("\n");
       writer.flush();
       ++count;
@@ -31,13 +27,11 @@ public class AccesslogStore {
       e.printStackTrace();
     }
     
-    if (count > MAX_COUNT) {
+    if (count >= maxCount) {
       try {
         writer.close();
       } catch (IOException e) {
         e.printStackTrace();
-      } finally {
-        writer = null;
       }
     }
 
